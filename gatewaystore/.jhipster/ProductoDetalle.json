@@ -1,0 +1,22 @@
+{
+    "name": "ProductoDetalle",
+    "fields": [
+        {
+            "fieldName": "producto",
+            "fieldType": "String"
+        }
+    ],
+    "relationships": [],
+    "changelogDate": "20200421195228",
+    "entityTableName": "producto_detalle",
+    "dto": "mapstruct",
+    "pagination": "pagination",
+    "service": "serviceClass",
+    "jpaMetamodelFiltering": true,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": [
+        "gatewaystore"
+    ]
+}

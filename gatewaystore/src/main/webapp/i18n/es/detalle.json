@@ -1,0 +1,22 @@
+{
+  "gatewaystoreApp": {
+    "detalle": {
+      "home": {
+        "title": "Detalles",
+        "createLabel": "Crear nuevo Detalle",
+        "createOrEditLabel": "Crear o editar Detalle",
+        "notFound": "Ningún Detalles encontrado"
+      },
+      "created": "Un nuevo Detalle ha sido creado con el identificador {{ param }}",
+      "updated": "Un Detalle ha sido actualizado con el identificador {{ param }}",
+      "deleted": "Un Detalle ha sido eliminado con el identificador {{ param }}",
+      "delete": {
+        "question": "¿Seguro que quiere eliminar Detalle {{ id }}?"
+      },
+      "detail": {
+        "title": "Detalle"
+      },
+      "nombre": "Nombre"
+    }
+  }
+}

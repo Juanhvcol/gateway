@@ -1,0 +1,22 @@
+{
+  "gatewaystoreApp": {
+    "productoDetalle": {
+      "home": {
+        "title": "Producto Detalles",
+        "createLabel": "Create a new Producto Detalle",
+        "createOrEditLabel": "Create or edit a Producto Detalle",
+        "notFound": "No Producto Detalles found"
+      },
+      "created": "A new Producto Detalle is created with identifier {{ param }}",
+      "updated": "A Producto Detalle is updated with identifier {{ param }}",
+      "deleted": "A Producto Detalle is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Producto Detalle {{ id }}?"
+      },
+      "detail": {
+        "title": "Producto Detalle"
+      },
+      "producto": "Producto"
+    }
+  }
+}

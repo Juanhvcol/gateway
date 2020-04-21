@@ -1,0 +1,36 @@
+{
+    "name": "Stock",
+    "fields": [
+        {
+            "fieldName": "cantidad",
+            "fieldType": "Long",
+            "fieldValidateRules": [
+                "required",
+                "min"
+            ],
+            "fieldValidateRulesMin": "0"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "producto",
+            "otherEntityRelationshipName": "stock",
+            "relationshipName": "producto",
+            "otherEntityField": "nombre"
+        }
+    ],
+    "changelogDate": "20200421195428",
+    "entityTableName": "stock",
+    "dto": "mapstruct",
+    "pagination": "pagination",
+    "service": "serviceClass",
+    "jpaMetamodelFiltering": true,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": [
+        "gatewaystore"
+    ],
+    "microserviceName": "inventariomicroservicio"
+}
