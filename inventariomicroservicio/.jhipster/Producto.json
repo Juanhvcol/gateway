@@ -1,0 +1,28 @@
+{
+    "name": "Producto",
+    "fields": [
+        {
+            "fieldName": "nombre",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "precio",
+            "fieldType": "BigDecimal"
+        }
+    ],
+    "relationships": [],
+    "changelogDate": "20200421195128",
+    "entityTableName": "producto",
+    "dto": "mapstruct",
+    "pagination": "pagination",
+    "service": "serviceClass",
+    "jpaMetamodelFiltering": true,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": [
+        "gatewaystore",
+        "inventariomicroservicio"
+    ],
+    "microserviceName": "inventariomicroservicio"
+}
