@@ -1,0 +1,42 @@
+{
+    "name": "Notificacion",
+    "fields": [
+        {
+            "fieldName": "fecha",
+            "fieldType": "Instant",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "mensaje",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "fechaSend",
+            "fieldType": "Instant",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "userId",
+            "fieldType": "Long"
+        }
+    ],
+    "relationships": [],
+    "changelogDate": "20200421195028",
+    "entityTableName": "notificacion",
+    "dto": "mapstruct",
+    "pagination": "pagination",
+    "service": "serviceClass",
+    "jpaMetamodelFiltering": true,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": [
+        "gatewaystore",
+        "notificacionesmicroservicio"
+    ],
+    "microserviceName": "notificacionesmicroservicio"
+}
