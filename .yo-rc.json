@@ -1,0 +1,43 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "com.mycompany.myinventario",
+      "nativeLanguage": "es"
+    },
+    "jhipsterVersion": "6.7.1",
+    "applicationType": "gateway",
+    "baseName": "gatewaystore",
+    "packageName": "com.mycompany.myinventario",
+    "packageFolder": "com/mycompany/myinventario",
+    "serverPort": "8080",
+    "authenticationType": "jwt",
+    "cacheProvider": "hazelcast",
+    "enableHibernateCache": true,
+    "websocket": "spring-websocket",
+    "databaseType": "sql",
+    "devDatabaseType": "postgresql",
+    "prodDatabaseType": "postgresql",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": "eureka",
+    "buildTool": "gradle",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "Y2RiMmIyMjgzMGEwZmI2NTlhYTM2YzIxM2ExNTk3NDJkMTdhMWNjNGU0YzBkNTJmOGJmNzJjNGU0YWY1NjYzMDhiNGMzMmQwZDQ1ZTk0NjljMzdmYWM0Y2I5ZjUzNDBjNmRmNTdlMTkxZmQ1NGMxOTY3MjcxMTJhZDM3MTU1MGE=",
+    "embeddableLaunchScript": false,
+    "useSass": true,
+    "clientPackageManager": "npm",
+    "clientFramework": "angularX",
+    "clientTheme": "flatly",
+    "clientThemeVariant": "primary",
+    "creationTimestamp": 1587483752153,
+    "testFrameworks": ["protractor"],
+    "jhiPrefix": "jhi",
+    "entitySuffix": "",
+    "dtoSuffix": "DTO",
+    "otherModules": [],
+    "enableTranslation": true,
+    "nativeLanguage": "es",
+    "languages": ["es", "en"],
+    "blueprints": []
+  }
+}
