@@ -1,23 +1,16 @@
 package com.themakers.storeonline.web.rest;
 
-import com.themakers.storeonline.service.FacturaService;
+import com.themakers.storeonline.domain.Factura;
+import com.themakers.storeonline.repository.FacturaRepository;
 import com.themakers.storeonline.web.rest.errors.BadRequestAlertException;
-import com.themakers.storeonline.service.dto.FacturaDTO;
-import com.themakers.storeonline.service.dto.FacturaCriteria;
-import com.themakers.storeonline.service.FacturaQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
-import io.github.jhipster.web.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -30,6 +23,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api")
+@Transactional
 public class FacturaResource {
 
     private final Logger log = LoggerFactory.getLogger(FacturaResource.class);
@@ -39,29 +33,26 @@ public class FacturaResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final FacturaService facturaService;
+    private final FacturaRepository facturaRepository;
 
-    private final FacturaQueryService facturaQueryService;
-
-    public FacturaResource(FacturaService facturaService, FacturaQueryService facturaQueryService) {
-        this.facturaService = facturaService;
-        this.facturaQueryService = facturaQueryService;
+    public FacturaResource(FacturaRepository facturaRepository) {
+        this.facturaRepository = facturaRepository;
     }
 
     /**
      * {@code POST  /facturas} : Create a new factura.
      *
-     * @param facturaDTO the facturaDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new facturaDTO, or with status {@code 400 (Bad Request)} if the factura has already an ID.
+     * @param factura the factura to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new factura, or with status {@code 400 (Bad Request)} if the factura has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/facturas")
-    public ResponseEntity<FacturaDTO> createFactura(@RequestBody FacturaDTO facturaDTO) throws URISyntaxException {
-        log.debug("REST request to save Factura : {}", facturaDTO);
-        if (facturaDTO.getId() != null) {
+    public ResponseEntity<Factura> createFactura(@RequestBody Factura factura) throws URISyntaxException {
+        log.debug("REST request to save Factura : {}", factura);
+        if (factura.getId() != null) {
             throw new BadRequestAlertException("A new factura cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        FacturaDTO result = facturaService.save(facturaDTO);
+        Factura result = facturaRepository.save(factura);
         return ResponseEntity.created(new URI("/api/facturas/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -70,74 +61,58 @@ public class FacturaResource {
     /**
      * {@code PUT  /facturas} : Updates an existing factura.
      *
-     * @param facturaDTO the facturaDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated facturaDTO,
-     * or with status {@code 400 (Bad Request)} if the facturaDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the facturaDTO couldn't be updated.
+     * @param factura the factura to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated factura,
+     * or with status {@code 400 (Bad Request)} if the factura is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the factura couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/facturas")
-    public ResponseEntity<FacturaDTO> updateFactura(@RequestBody FacturaDTO facturaDTO) throws URISyntaxException {
-        log.debug("REST request to update Factura : {}", facturaDTO);
-        if (facturaDTO.getId() == null) {
+    public ResponseEntity<Factura> updateFactura(@RequestBody Factura factura) throws URISyntaxException {
+        log.debug("REST request to update Factura : {}", factura);
+        if (factura.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        FacturaDTO result = facturaService.save(facturaDTO);
+        Factura result = facturaRepository.save(factura);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, facturaDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, factura.getId().toString()))
             .body(result);
     }
 
     /**
      * {@code GET  /facturas} : get all the facturas.
      *
-     * @param pageable the pagination information.
-     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of facturas in body.
      */
     @GetMapping("/facturas")
-    public ResponseEntity<List<FacturaDTO>> getAllFacturas(FacturaCriteria criteria, Pageable pageable) {
-        log.debug("REST request to get Facturas by criteria: {}", criteria);
-        Page<FacturaDTO> page = facturaQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-    /**
-     * {@code GET  /facturas/count} : count all the facturas.
-     *
-     * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
-     */
-    @GetMapping("/facturas/count")
-    public ResponseEntity<Long> countFacturas(FacturaCriteria criteria) {
-        log.debug("REST request to count Facturas by criteria: {}", criteria);
-        return ResponseEntity.ok().body(facturaQueryService.countByCriteria(criteria));
+    public List<Factura> getAllFacturas() {
+        log.debug("REST request to get all Facturas");
+        return facturaRepository.findAll();
     }
 
     /**
      * {@code GET  /facturas/:id} : get the "id" factura.
      *
-     * @param id the id of the facturaDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the facturaDTO, or with status {@code 404 (Not Found)}.
+     * @param id the id of the factura to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the factura, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/facturas/{id}")
-    public ResponseEntity<FacturaDTO> getFactura(@PathVariable Long id) {
+    public ResponseEntity<Factura> getFactura(@PathVariable Long id) {
         log.debug("REST request to get Factura : {}", id);
-        Optional<FacturaDTO> facturaDTO = facturaService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(facturaDTO);
+        Optional<Factura> factura = facturaRepository.findById(id);
+        return ResponseUtil.wrapOrNotFound(factura);
     }
 
     /**
      * {@code DELETE  /facturas/:id} : delete the "id" factura.
      *
-     * @param id the id of the facturaDTO to delete.
+     * @param id the id of the factura to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/facturas/{id}")
     public ResponseEntity<Void> deleteFactura(@PathVariable Long id) {
         log.debug("REST request to delete Factura : {}", id);
-        facturaService.delete(id);
+        facturaRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

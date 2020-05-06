@@ -3,9 +3,6 @@ package com.themkers.notificacion.web.rest;
 import com.themkers.notificacion.NotificacionesmicroservicioApp;
 import com.themkers.notificacion.domain.Notificacion;
 import com.themkers.notificacion.repository.NotificacionRepository;
-import com.themkers.notificacion.service.NotificacionService;
-import com.themkers.notificacion.service.dto.NotificacionDTO;
-import com.themkers.notificacion.service.mapper.NotificacionMapper;
 import com.themkers.notificacion.web.rest.errors.ExceptionTranslator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -53,12 +50,6 @@ public class NotificacionResourceIT {
     private NotificacionRepository notificacionRepository;
 
     @Autowired
-    private NotificacionMapper notificacionMapper;
-
-    @Autowired
-    private NotificacionService notificacionService;
-
-    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -77,7 +68,7 @@ public class NotificacionResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final NotificacionResource notificacionResource = new NotificacionResource(notificacionService);
+        final NotificacionResource notificacionResource = new NotificacionResource(notificacionRepository);
         this.restNotificacionMockMvc = MockMvcBuilders.standaloneSetup(notificacionResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -126,10 +117,9 @@ public class NotificacionResourceIT {
         int databaseSizeBeforeCreate = notificacionRepository.findAll().size();
 
         // Create the Notificacion
-        NotificacionDTO notificacionDTO = notificacionMapper.toDto(notificacion);
         restNotificacionMockMvc.perform(post("/api/notificacions")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(notificacionDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(notificacion)))
             .andExpect(status().isCreated());
 
         // Validate the Notificacion in the database
@@ -148,12 +138,11 @@ public class NotificacionResourceIT {
 
         // Create the Notificacion with an existing ID
         notificacion.setId("existing_id");
-        NotificacionDTO notificacionDTO = notificacionMapper.toDto(notificacion);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restNotificacionMockMvc.perform(post("/api/notificacions")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(notificacionDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(notificacion)))
             .andExpect(status().isBadRequest());
 
         // Validate the Notificacion in the database
@@ -169,11 +158,10 @@ public class NotificacionResourceIT {
         notificacion.setFecha(null);
 
         // Create the Notificacion, which fails.
-        NotificacionDTO notificacionDTO = notificacionMapper.toDto(notificacion);
 
         restNotificacionMockMvc.perform(post("/api/notificacions")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(notificacionDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(notificacion)))
             .andExpect(status().isBadRequest());
 
         List<Notificacion> notificacionList = notificacionRepository.findAll();
@@ -187,11 +175,10 @@ public class NotificacionResourceIT {
         notificacion.setFechaSend(null);
 
         // Create the Notificacion, which fails.
-        NotificacionDTO notificacionDTO = notificacionMapper.toDto(notificacion);
 
         restNotificacionMockMvc.perform(post("/api/notificacions")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(notificacionDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(notificacion)))
             .andExpect(status().isBadRequest());
 
         List<Notificacion> notificacionList = notificacionRepository.findAll();
@@ -251,11 +238,10 @@ public class NotificacionResourceIT {
             .mensaje(UPDATED_MENSAJE)
             .fechaSend(UPDATED_FECHA_SEND)
             .userId(UPDATED_USER_ID);
-        NotificacionDTO notificacionDTO = notificacionMapper.toDto(updatedNotificacion);
 
         restNotificacionMockMvc.perform(put("/api/notificacions")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(notificacionDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(updatedNotificacion)))
             .andExpect(status().isOk());
 
         // Validate the Notificacion in the database
@@ -273,12 +259,11 @@ public class NotificacionResourceIT {
         int databaseSizeBeforeUpdate = notificacionRepository.findAll().size();
 
         // Create the Notificacion
-        NotificacionDTO notificacionDTO = notificacionMapper.toDto(notificacion);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restNotificacionMockMvc.perform(put("/api/notificacions")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(notificacionDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(notificacion)))
             .andExpect(status().isBadRequest());
 
         // Validate the Notificacion in the database

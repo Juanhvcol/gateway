@@ -1,0 +1,25 @@
+{
+  "notificacionesmicroservicioApp": {
+    "notificacion": {
+      "home": {
+        "title": "Notificacions",
+        "createLabel": "Crear nuevo Notificacion",
+        "createOrEditLabel": "Crear o editar Notificacion",
+        "notFound": "Ningún Notificacions encontrado"
+      },
+      "created": "Un nuevo Notificacion ha sido creado con el identificador {{ param }}",
+      "updated": "Un Notificacion ha sido actualizado con el identificador {{ param }}",
+      "deleted": "Un Notificacion ha sido eliminado con el identificador {{ param }}",
+      "delete": {
+        "question": "¿Seguro que quiere eliminar Notificacion {{ id }}?"
+      },
+      "detail": {
+        "title": "Notificacion"
+      },
+      "fecha": "Fecha",
+      "mensaje": "Mensaje",
+      "fechaSend": "Fecha Send",
+      "userId": "User Id"
+    }
+  }
+}

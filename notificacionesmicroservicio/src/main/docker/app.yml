@@ -11,6 +11,8 @@ services:
       - SPRING_DATA_MONGODB_URI=mongodb://notificacionesmicroservicio-mongodb:27017
       - SPRING_DATA_MONGODB_DATABASE=notificacionesmicroservicio
       - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
+    ports:
+      - 8082:8082
   notificacionesmicroservicio-mongodb:
     extends:
       file: mongodb.yml

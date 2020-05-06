@@ -1,13 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpHeaders, HttpResponse } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
+import { HttpResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { JhiEventManager } from 'ng-jhipster';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { IFactura } from 'app/shared/model/factura.model';
-
-import { ITEMS_PER_PAGE } from 'app/shared/constants/pagination.constants';
 import { FacturaService } from './factura.service';
 import { FacturaDeleteDialogComponent } from './factura-delete-dialog.component';
 
@@ -18,44 +15,15 @@ import { FacturaDeleteDialogComponent } from './factura-delete-dialog.component'
 export class FacturaComponent implements OnInit, OnDestroy {
   facturas?: IFactura[];
   eventSubscriber?: Subscription;
-  totalItems = 0;
-  itemsPerPage = ITEMS_PER_PAGE;
-  page!: number;
-  predicate!: string;
-  ascending!: boolean;
-  ngbPaginationPage = 1;
 
-  constructor(
-    protected facturaService: FacturaService,
-    protected activatedRoute: ActivatedRoute,
-    protected router: Router,
-    protected eventManager: JhiEventManager,
-    protected modalService: NgbModal
-  ) {}
+  constructor(protected facturaService: FacturaService, protected eventManager: JhiEventManager, protected modalService: NgbModal) {}
 
-  loadPage(page?: number): void {
-    const pageToLoad: number = page || this.page;
-
-    this.facturaService
-      .query({
-        page: pageToLoad - 1,
-        size: this.itemsPerPage,
-        sort: this.sort()
-      })
-      .subscribe(
-        (res: HttpResponse<IFactura[]>) => this.onSuccess(res.body, res.headers, pageToLoad),
-        () => this.onError()
-      );
+  loadAll(): void {
+    this.facturaService.query().subscribe((res: HttpResponse<IFactura[]>) => (this.facturas = res.body || []));
   }
 
   ngOnInit(): void {
-    this.activatedRoute.data.subscribe(data => {
-      this.page = data.pagingParams.page;
-      this.ascending = data.pagingParams.ascending;
-      this.predicate = data.pagingParams.predicate;
-      this.ngbPaginationPage = data.pagingParams.page;
-      this.loadPage();
-    });
+    this.loadAll();
     this.registerChangeInFacturas();
   }
 
@@ -71,36 +39,11 @@ export class FacturaComponent implements OnInit, OnDestroy {
   }
 
   registerChangeInFacturas(): void {
-    this.eventSubscriber = this.eventManager.subscribe('facturaListModification', () => this.loadPage());
+    this.eventSubscriber = this.eventManager.subscribe('facturaListModification', () => this.loadAll());
   }
 
   delete(factura: IFactura): void {
     const modalRef = this.modalService.open(FacturaDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.factura = factura;
-  }
-
-  sort(): string[] {
-    const result = [this.predicate + ',' + (this.ascending ? 'asc' : 'desc')];
-    if (this.predicate !== 'id') {
-      result.push('id');
-    }
-    return result;
-  }
-
-  protected onSuccess(data: IFactura[] | null, headers: HttpHeaders, page: number): void {
-    this.totalItems = Number(headers.get('X-Total-Count'));
-    this.page = page;
-    this.router.navigate(['/factura'], {
-      queryParams: {
-        page: this.page,
-        size: this.itemsPerPage,
-        sort: this.predicate + ',' + (this.ascending ? 'asc' : 'desc')
-      }
-    });
-    this.facturas = data || [];
-  }
-
-  protected onError(): void {
-    this.ngbPaginationPage = this.page;
   }
 }

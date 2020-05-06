@@ -1,23 +1,16 @@
 package com.themakers.storeonline.web.rest;
 
-import com.themakers.storeonline.service.UsuarioService;
+import com.themakers.storeonline.domain.Usuario;
+import com.themakers.storeonline.repository.UsuarioRepository;
 import com.themakers.storeonline.web.rest.errors.BadRequestAlertException;
-import com.themakers.storeonline.service.dto.UsuarioDTO;
-import com.themakers.storeonline.service.dto.UsuarioCriteria;
-import com.themakers.storeonline.service.UsuarioQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
-import io.github.jhipster.web.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -31,6 +24,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api")
+@Transactional
 public class UsuarioResource {
 
     private final Logger log = LoggerFactory.getLogger(UsuarioResource.class);
@@ -40,29 +34,26 @@ public class UsuarioResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
 
-    private final UsuarioQueryService usuarioQueryService;
-
-    public UsuarioResource(UsuarioService usuarioService, UsuarioQueryService usuarioQueryService) {
-        this.usuarioService = usuarioService;
-        this.usuarioQueryService = usuarioQueryService;
+    public UsuarioResource(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
     /**
      * {@code POST  /usuarios} : Create a new usuario.
      *
-     * @param usuarioDTO the usuarioDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new usuarioDTO, or with status {@code 400 (Bad Request)} if the usuario has already an ID.
+     * @param usuario the usuario to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new usuario, or with status {@code 400 (Bad Request)} if the usuario has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/usuarios")
-    public ResponseEntity<UsuarioDTO> createUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) throws URISyntaxException {
-        log.debug("REST request to save Usuario : {}", usuarioDTO);
-        if (usuarioDTO.getId() != null) {
+    public ResponseEntity<Usuario> createUsuario(@Valid @RequestBody Usuario usuario) throws URISyntaxException {
+        log.debug("REST request to save Usuario : {}", usuario);
+        if (usuario.getId() != null) {
             throw new BadRequestAlertException("A new usuario cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        UsuarioDTO result = usuarioService.save(usuarioDTO);
+        Usuario result = usuarioRepository.save(usuario);
         return ResponseEntity.created(new URI("/api/usuarios/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -71,74 +62,58 @@ public class UsuarioResource {
     /**
      * {@code PUT  /usuarios} : Updates an existing usuario.
      *
-     * @param usuarioDTO the usuarioDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated usuarioDTO,
-     * or with status {@code 400 (Bad Request)} if the usuarioDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the usuarioDTO couldn't be updated.
+     * @param usuario the usuario to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated usuario,
+     * or with status {@code 400 (Bad Request)} if the usuario is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the usuario couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/usuarios")
-    public ResponseEntity<UsuarioDTO> updateUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) throws URISyntaxException {
-        log.debug("REST request to update Usuario : {}", usuarioDTO);
-        if (usuarioDTO.getId() == null) {
+    public ResponseEntity<Usuario> updateUsuario(@Valid @RequestBody Usuario usuario) throws URISyntaxException {
+        log.debug("REST request to update Usuario : {}", usuario);
+        if (usuario.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        UsuarioDTO result = usuarioService.save(usuarioDTO);
+        Usuario result = usuarioRepository.save(usuario);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, usuarioDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, usuario.getId().toString()))
             .body(result);
     }
 
     /**
      * {@code GET  /usuarios} : get all the usuarios.
      *
-     * @param pageable the pagination information.
-     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of usuarios in body.
      */
     @GetMapping("/usuarios")
-    public ResponseEntity<List<UsuarioDTO>> getAllUsuarios(UsuarioCriteria criteria, Pageable pageable) {
-        log.debug("REST request to get Usuarios by criteria: {}", criteria);
-        Page<UsuarioDTO> page = usuarioQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-    /**
-     * {@code GET  /usuarios/count} : count all the usuarios.
-     *
-     * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
-     */
-    @GetMapping("/usuarios/count")
-    public ResponseEntity<Long> countUsuarios(UsuarioCriteria criteria) {
-        log.debug("REST request to count Usuarios by criteria: {}", criteria);
-        return ResponseEntity.ok().body(usuarioQueryService.countByCriteria(criteria));
+    public List<Usuario> getAllUsuarios() {
+        log.debug("REST request to get all Usuarios");
+        return usuarioRepository.findAll();
     }
 
     /**
      * {@code GET  /usuarios/:id} : get the "id" usuario.
      *
-     * @param id the id of the usuarioDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the usuarioDTO, or with status {@code 404 (Not Found)}.
+     * @param id the id of the usuario to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the usuario, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/usuarios/{id}")
-    public ResponseEntity<UsuarioDTO> getUsuario(@PathVariable Long id) {
+    public ResponseEntity<Usuario> getUsuario(@PathVariable Long id) {
         log.debug("REST request to get Usuario : {}", id);
-        Optional<UsuarioDTO> usuarioDTO = usuarioService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(usuarioDTO);
+        Optional<Usuario> usuario = usuarioRepository.findById(id);
+        return ResponseUtil.wrapOrNotFound(usuario);
     }
 
     /**
      * {@code DELETE  /usuarios/:id} : delete the "id" usuario.
      *
-     * @param id the id of the usuarioDTO to delete.
+     * @param id the id of the usuario to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/usuarios/{id}")
     public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
         log.debug("REST request to delete Usuario : {}", id);
-        usuarioService.delete(id);
+        usuarioRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

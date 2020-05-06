@@ -21,11 +21,11 @@
     <div class="table-responsive" id="entities" *ngIf="facturaDetalles?.length > 0">
         <table class="table table-striped" aria-describedby="page-heading">
             <thead>
-                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
-                    <th scope="col"  jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="productoId"><span jhiTranslate="gatewaystoreApp.facturaDetalle.productoId">Producto Id</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="cantidad"><span jhiTranslate="gatewaystoreApp.facturaDetalle.cantidad">Cantidad</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="precioUnitario"><span jhiTranslate="gatewaystoreApp.facturaDetalle.precioUnitario">Precio Unitario</span> <fa-icon icon="sort"></fa-icon></th>
+                <tr>
+                    <th scope="col" ><span jhiTranslate="global.field.id">ID</span></th>
+                    <th scope="col" ><span jhiTranslate="gatewaystoreApp.facturaDetalle.productoId">Producto Id</span></th>
+                    <th scope="col" ><span jhiTranslate="gatewaystoreApp.facturaDetalle.cantidad">Cantidad</span></th>
+                    <th scope="col" ><span jhiTranslate="gatewaystoreApp.facturaDetalle.precioUnitario">Precio Unitario</span></th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -61,15 +61,5 @@
                 </tr>
             </tbody>
         </table>
-    </div>
-
-    <div *ngIf="facturaDetalles?.length > 0">
-        <div class="row justify-content-center">
-            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
-        </div>
-
-        <div class="row justify-content-center">
-            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
-        </div>
     </div>
 </div>

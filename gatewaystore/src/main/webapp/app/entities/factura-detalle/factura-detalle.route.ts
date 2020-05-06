@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { Resolve, ActivatedRouteSnapshot, Routes, Router } from '@angular/router';
-import { JhiResolvePagingParams } from 'ng-jhipster';
 import { Observable, of, EMPTY } from 'rxjs';
 import { flatMap } from 'rxjs/operators';
 
@@ -38,12 +37,8 @@ export const facturaDetalleRoute: Routes = [
   {
     path: '',
     component: FacturaDetalleComponent,
-    resolve: {
-      pagingParams: JhiResolvePagingParams
-    },
     data: {
       authorities: ['ROLE_USER'],
-      defaultSort: 'id,asc',
       pageTitle: 'gatewaystoreApp.facturaDetalle.home.title'
     },
     canActivate: [UserRouteAccessService]

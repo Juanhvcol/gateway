@@ -23,7 +23,7 @@ export class UsuarioUpdateComponent implements OnInit {
     nombre: [],
     apellido: [],
     direccion: [],
-    userId: [null, Validators.required]
+    user: [null, Validators.required]
   });
 
   constructor(
@@ -47,7 +47,7 @@ export class UsuarioUpdateComponent implements OnInit {
       nombre: usuario.nombre,
       apellido: usuario.apellido,
       direccion: usuario.direccion,
-      userId: usuario.userId
+      user: usuario.user
     });
   }
 
@@ -72,7 +72,7 @@ export class UsuarioUpdateComponent implements OnInit {
       nombre: this.editForm.get(['nombre'])!.value,
       apellido: this.editForm.get(['apellido'])!.value,
       direccion: this.editForm.get(['direccion'])!.value,
-      userId: this.editForm.get(['userId'])!.value
+      user: this.editForm.get(['user'])!.value
     };
   }
 

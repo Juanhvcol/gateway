@@ -2,14 +2,8 @@ package com.themakers.storeonline.web.rest;
 
 import com.themakers.storeonline.GatewaystoreApp;
 import com.themakers.storeonline.domain.Cliente;
-import com.themakers.storeonline.domain.Factura;
 import com.themakers.storeonline.repository.ClienteRepository;
-import com.themakers.storeonline.service.ClienteService;
-import com.themakers.storeonline.service.dto.ClienteDTO;
-import com.themakers.storeonline.service.mapper.ClienteMapper;
 import com.themakers.storeonline.web.rest.errors.ExceptionTranslator;
-import com.themakers.storeonline.service.dto.ClienteCriteria;
-import com.themakers.storeonline.service.ClienteQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,15 +46,6 @@ public class ClienteResourceIT {
     private ClienteRepository clienteRepository;
 
     @Autowired
-    private ClienteMapper clienteMapper;
-
-    @Autowired
-    private ClienteService clienteService;
-
-    @Autowired
-    private ClienteQueryService clienteQueryService;
-
-    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -82,7 +67,7 @@ public class ClienteResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ClienteResource clienteResource = new ClienteResource(clienteService, clienteQueryService);
+        final ClienteResource clienteResource = new ClienteResource(clienteRepository);
         this.restClienteMockMvc = MockMvcBuilders.standaloneSetup(clienteResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -129,10 +114,9 @@ public class ClienteResourceIT {
         int databaseSizeBeforeCreate = clienteRepository.findAll().size();
 
         // Create the Cliente
-        ClienteDTO clienteDTO = clienteMapper.toDto(cliente);
         restClienteMockMvc.perform(post("/api/clientes")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(clienteDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(cliente)))
             .andExpect(status().isCreated());
 
         // Validate the Cliente in the database
@@ -151,12 +135,11 @@ public class ClienteResourceIT {
 
         // Create the Cliente with an existing ID
         cliente.setId(1L);
-        ClienteDTO clienteDTO = clienteMapper.toDto(cliente);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restClienteMockMvc.perform(post("/api/clientes")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(clienteDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(cliente)))
             .andExpect(status().isBadRequest());
 
         // Validate the Cliente in the database
@@ -197,316 +180,6 @@ public class ClienteResourceIT {
             .andExpect(jsonPath("$.identificacion").value(DEFAULT_IDENTIFICACION));
     }
 
-
-    @Test
-    @Transactional
-    public void getClientesByIdFiltering() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        Long id = cliente.getId();
-
-        defaultClienteShouldBeFound("id.equals=" + id);
-        defaultClienteShouldNotBeFound("id.notEquals=" + id);
-
-        defaultClienteShouldBeFound("id.greaterThanOrEqual=" + id);
-        defaultClienteShouldNotBeFound("id.greaterThan=" + id);
-
-        defaultClienteShouldBeFound("id.lessThanOrEqual=" + id);
-        defaultClienteShouldNotBeFound("id.lessThan=" + id);
-    }
-
-
-    @Test
-    @Transactional
-    public void getAllClientesByNombreIsEqualToSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where nombre equals to DEFAULT_NOMBRE
-        defaultClienteShouldBeFound("nombre.equals=" + DEFAULT_NOMBRE);
-
-        // Get all the clienteList where nombre equals to UPDATED_NOMBRE
-        defaultClienteShouldNotBeFound("nombre.equals=" + UPDATED_NOMBRE);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByNombreIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where nombre not equals to DEFAULT_NOMBRE
-        defaultClienteShouldNotBeFound("nombre.notEquals=" + DEFAULT_NOMBRE);
-
-        // Get all the clienteList where nombre not equals to UPDATED_NOMBRE
-        defaultClienteShouldBeFound("nombre.notEquals=" + UPDATED_NOMBRE);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByNombreIsInShouldWork() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where nombre in DEFAULT_NOMBRE or UPDATED_NOMBRE
-        defaultClienteShouldBeFound("nombre.in=" + DEFAULT_NOMBRE + "," + UPDATED_NOMBRE);
-
-        // Get all the clienteList where nombre equals to UPDATED_NOMBRE
-        defaultClienteShouldNotBeFound("nombre.in=" + UPDATED_NOMBRE);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByNombreIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where nombre is not null
-        defaultClienteShouldBeFound("nombre.specified=true");
-
-        // Get all the clienteList where nombre is null
-        defaultClienteShouldNotBeFound("nombre.specified=false");
-    }
-                @Test
-    @Transactional
-    public void getAllClientesByNombreContainsSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where nombre contains DEFAULT_NOMBRE
-        defaultClienteShouldBeFound("nombre.contains=" + DEFAULT_NOMBRE);
-
-        // Get all the clienteList where nombre contains UPDATED_NOMBRE
-        defaultClienteShouldNotBeFound("nombre.contains=" + UPDATED_NOMBRE);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByNombreNotContainsSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where nombre does not contain DEFAULT_NOMBRE
-        defaultClienteShouldNotBeFound("nombre.doesNotContain=" + DEFAULT_NOMBRE);
-
-        // Get all the clienteList where nombre does not contain UPDATED_NOMBRE
-        defaultClienteShouldBeFound("nombre.doesNotContain=" + UPDATED_NOMBRE);
-    }
-
-
-    @Test
-    @Transactional
-    public void getAllClientesByApellidoIsEqualToSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where apellido equals to DEFAULT_APELLIDO
-        defaultClienteShouldBeFound("apellido.equals=" + DEFAULT_APELLIDO);
-
-        // Get all the clienteList where apellido equals to UPDATED_APELLIDO
-        defaultClienteShouldNotBeFound("apellido.equals=" + UPDATED_APELLIDO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByApellidoIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where apellido not equals to DEFAULT_APELLIDO
-        defaultClienteShouldNotBeFound("apellido.notEquals=" + DEFAULT_APELLIDO);
-
-        // Get all the clienteList where apellido not equals to UPDATED_APELLIDO
-        defaultClienteShouldBeFound("apellido.notEquals=" + UPDATED_APELLIDO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByApellidoIsInShouldWork() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where apellido in DEFAULT_APELLIDO or UPDATED_APELLIDO
-        defaultClienteShouldBeFound("apellido.in=" + DEFAULT_APELLIDO + "," + UPDATED_APELLIDO);
-
-        // Get all the clienteList where apellido equals to UPDATED_APELLIDO
-        defaultClienteShouldNotBeFound("apellido.in=" + UPDATED_APELLIDO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByApellidoIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where apellido is not null
-        defaultClienteShouldBeFound("apellido.specified=true");
-
-        // Get all the clienteList where apellido is null
-        defaultClienteShouldNotBeFound("apellido.specified=false");
-    }
-                @Test
-    @Transactional
-    public void getAllClientesByApellidoContainsSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where apellido contains DEFAULT_APELLIDO
-        defaultClienteShouldBeFound("apellido.contains=" + DEFAULT_APELLIDO);
-
-        // Get all the clienteList where apellido contains UPDATED_APELLIDO
-        defaultClienteShouldNotBeFound("apellido.contains=" + UPDATED_APELLIDO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByApellidoNotContainsSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where apellido does not contain DEFAULT_APELLIDO
-        defaultClienteShouldNotBeFound("apellido.doesNotContain=" + DEFAULT_APELLIDO);
-
-        // Get all the clienteList where apellido does not contain UPDATED_APELLIDO
-        defaultClienteShouldBeFound("apellido.doesNotContain=" + UPDATED_APELLIDO);
-    }
-
-
-    @Test
-    @Transactional
-    public void getAllClientesByIdentificacionIsEqualToSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where identificacion equals to DEFAULT_IDENTIFICACION
-        defaultClienteShouldBeFound("identificacion.equals=" + DEFAULT_IDENTIFICACION);
-
-        // Get all the clienteList where identificacion equals to UPDATED_IDENTIFICACION
-        defaultClienteShouldNotBeFound("identificacion.equals=" + UPDATED_IDENTIFICACION);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByIdentificacionIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where identificacion not equals to DEFAULT_IDENTIFICACION
-        defaultClienteShouldNotBeFound("identificacion.notEquals=" + DEFAULT_IDENTIFICACION);
-
-        // Get all the clienteList where identificacion not equals to UPDATED_IDENTIFICACION
-        defaultClienteShouldBeFound("identificacion.notEquals=" + UPDATED_IDENTIFICACION);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByIdentificacionIsInShouldWork() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where identificacion in DEFAULT_IDENTIFICACION or UPDATED_IDENTIFICACION
-        defaultClienteShouldBeFound("identificacion.in=" + DEFAULT_IDENTIFICACION + "," + UPDATED_IDENTIFICACION);
-
-        // Get all the clienteList where identificacion equals to UPDATED_IDENTIFICACION
-        defaultClienteShouldNotBeFound("identificacion.in=" + UPDATED_IDENTIFICACION);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByIdentificacionIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where identificacion is not null
-        defaultClienteShouldBeFound("identificacion.specified=true");
-
-        // Get all the clienteList where identificacion is null
-        defaultClienteShouldNotBeFound("identificacion.specified=false");
-    }
-                @Test
-    @Transactional
-    public void getAllClientesByIdentificacionContainsSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where identificacion contains DEFAULT_IDENTIFICACION
-        defaultClienteShouldBeFound("identificacion.contains=" + DEFAULT_IDENTIFICACION);
-
-        // Get all the clienteList where identificacion contains UPDATED_IDENTIFICACION
-        defaultClienteShouldNotBeFound("identificacion.contains=" + UPDATED_IDENTIFICACION);
-    }
-
-    @Test
-    @Transactional
-    public void getAllClientesByIdentificacionNotContainsSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-
-        // Get all the clienteList where identificacion does not contain DEFAULT_IDENTIFICACION
-        defaultClienteShouldNotBeFound("identificacion.doesNotContain=" + DEFAULT_IDENTIFICACION);
-
-        // Get all the clienteList where identificacion does not contain UPDATED_IDENTIFICACION
-        defaultClienteShouldBeFound("identificacion.doesNotContain=" + UPDATED_IDENTIFICACION);
-    }
-
-
-    @Test
-    @Transactional
-    public void getAllClientesByFacturaIsEqualToSomething() throws Exception {
-        // Initialize the database
-        clienteRepository.saveAndFlush(cliente);
-        Factura factura = FacturaResourceIT.createEntity(em);
-        em.persist(factura);
-        em.flush();
-        cliente.setFactura(factura);
-        clienteRepository.saveAndFlush(cliente);
-        Long facturaId = factura.getId();
-
-        // Get all the clienteList where factura equals to facturaId
-        defaultClienteShouldBeFound("facturaId.equals=" + facturaId);
-
-        // Get all the clienteList where factura equals to facturaId + 1
-        defaultClienteShouldNotBeFound("facturaId.equals=" + (facturaId + 1));
-    }
-
-    /**
-     * Executes the search, and checks that the default entity is returned.
-     */
-    private void defaultClienteShouldBeFound(String filter) throws Exception {
-        restClienteMockMvc.perform(get("/api/clientes?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(cliente.getId().intValue())))
-            .andExpect(jsonPath("$.[*].nombre").value(hasItem(DEFAULT_NOMBRE)))
-            .andExpect(jsonPath("$.[*].apellido").value(hasItem(DEFAULT_APELLIDO)))
-            .andExpect(jsonPath("$.[*].identificacion").value(hasItem(DEFAULT_IDENTIFICACION)));
-
-        // Check, that the count call also returns 1
-        restClienteMockMvc.perform(get("/api/clientes/count?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(content().string("1"));
-    }
-
-    /**
-     * Executes the search, and checks that the default entity is not returned.
-     */
-    private void defaultClienteShouldNotBeFound(String filter) throws Exception {
-        restClienteMockMvc.perform(get("/api/clientes?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$").isEmpty());
-
-        // Check, that the count call also returns 0
-        restClienteMockMvc.perform(get("/api/clientes/count?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(content().string("0"));
-    }
-
-
     @Test
     @Transactional
     public void getNonExistingCliente() throws Exception {
@@ -531,11 +204,10 @@ public class ClienteResourceIT {
             .nombre(UPDATED_NOMBRE)
             .apellido(UPDATED_APELLIDO)
             .identificacion(UPDATED_IDENTIFICACION);
-        ClienteDTO clienteDTO = clienteMapper.toDto(updatedCliente);
 
         restClienteMockMvc.perform(put("/api/clientes")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(clienteDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(updatedCliente)))
             .andExpect(status().isOk());
 
         // Validate the Cliente in the database
@@ -553,12 +225,11 @@ public class ClienteResourceIT {
         int databaseSizeBeforeUpdate = clienteRepository.findAll().size();
 
         // Create the Cliente
-        ClienteDTO clienteDTO = clienteMapper.toDto(cliente);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restClienteMockMvc.perform(put("/api/clientes")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(clienteDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(cliente)))
             .andExpect(status().isBadRequest());
 
         // Validate the Cliente in the database

@@ -3,12 +3,7 @@ package com.themkers.inventario.web.rest;
 import com.themkers.inventario.InventariomicroservicioApp;
 import com.themkers.inventario.domain.Producto;
 import com.themkers.inventario.repository.ProductoRepository;
-import com.themkers.inventario.service.ProductoService;
-import com.themkers.inventario.service.dto.ProductoDTO;
-import com.themkers.inventario.service.mapper.ProductoMapper;
 import com.themkers.inventario.web.rest.errors.ExceptionTranslator;
-import com.themkers.inventario.service.dto.ProductoCriteria;
-import com.themkers.inventario.service.ProductoQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,19 +39,9 @@ public class ProductoResourceIT {
 
     private static final BigDecimal DEFAULT_PRECIO = new BigDecimal(1);
     private static final BigDecimal UPDATED_PRECIO = new BigDecimal(2);
-    private static final BigDecimal SMALLER_PRECIO = new BigDecimal(1 - 1);
 
     @Autowired
     private ProductoRepository productoRepository;
-
-    @Autowired
-    private ProductoMapper productoMapper;
-
-    @Autowired
-    private ProductoService productoService;
-
-    @Autowired
-    private ProductoQueryService productoQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -80,7 +65,7 @@ public class ProductoResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ProductoResource productoResource = new ProductoResource(productoService, productoQueryService);
+        final ProductoResource productoResource = new ProductoResource(productoRepository);
         this.restProductoMockMvc = MockMvcBuilders.standaloneSetup(productoResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -125,10 +110,9 @@ public class ProductoResourceIT {
         int databaseSizeBeforeCreate = productoRepository.findAll().size();
 
         // Create the Producto
-        ProductoDTO productoDTO = productoMapper.toDto(producto);
         restProductoMockMvc.perform(post("/api/productos")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(productoDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(producto)))
             .andExpect(status().isCreated());
 
         // Validate the Producto in the database
@@ -146,12 +130,11 @@ public class ProductoResourceIT {
 
         // Create the Producto with an existing ID
         producto.setId(1L);
-        ProductoDTO productoDTO = productoMapper.toDto(producto);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restProductoMockMvc.perform(post("/api/productos")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(productoDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(producto)))
             .andExpect(status().isBadRequest());
 
         // Validate the Producto in the database
@@ -190,244 +173,6 @@ public class ProductoResourceIT {
             .andExpect(jsonPath("$.precio").value(DEFAULT_PRECIO.intValue()));
     }
 
-
-    @Test
-    @Transactional
-    public void getProductosByIdFiltering() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        Long id = producto.getId();
-
-        defaultProductoShouldBeFound("id.equals=" + id);
-        defaultProductoShouldNotBeFound("id.notEquals=" + id);
-
-        defaultProductoShouldBeFound("id.greaterThanOrEqual=" + id);
-        defaultProductoShouldNotBeFound("id.greaterThan=" + id);
-
-        defaultProductoShouldBeFound("id.lessThanOrEqual=" + id);
-        defaultProductoShouldNotBeFound("id.lessThan=" + id);
-    }
-
-
-    @Test
-    @Transactional
-    public void getAllProductosByNombreIsEqualToSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where nombre equals to DEFAULT_NOMBRE
-        defaultProductoShouldBeFound("nombre.equals=" + DEFAULT_NOMBRE);
-
-        // Get all the productoList where nombre equals to UPDATED_NOMBRE
-        defaultProductoShouldNotBeFound("nombre.equals=" + UPDATED_NOMBRE);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByNombreIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where nombre not equals to DEFAULT_NOMBRE
-        defaultProductoShouldNotBeFound("nombre.notEquals=" + DEFAULT_NOMBRE);
-
-        // Get all the productoList where nombre not equals to UPDATED_NOMBRE
-        defaultProductoShouldBeFound("nombre.notEquals=" + UPDATED_NOMBRE);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByNombreIsInShouldWork() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where nombre in DEFAULT_NOMBRE or UPDATED_NOMBRE
-        defaultProductoShouldBeFound("nombre.in=" + DEFAULT_NOMBRE + "," + UPDATED_NOMBRE);
-
-        // Get all the productoList where nombre equals to UPDATED_NOMBRE
-        defaultProductoShouldNotBeFound("nombre.in=" + UPDATED_NOMBRE);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByNombreIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where nombre is not null
-        defaultProductoShouldBeFound("nombre.specified=true");
-
-        // Get all the productoList where nombre is null
-        defaultProductoShouldNotBeFound("nombre.specified=false");
-    }
-                @Test
-    @Transactional
-    public void getAllProductosByNombreContainsSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where nombre contains DEFAULT_NOMBRE
-        defaultProductoShouldBeFound("nombre.contains=" + DEFAULT_NOMBRE);
-
-        // Get all the productoList where nombre contains UPDATED_NOMBRE
-        defaultProductoShouldNotBeFound("nombre.contains=" + UPDATED_NOMBRE);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByNombreNotContainsSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where nombre does not contain DEFAULT_NOMBRE
-        defaultProductoShouldNotBeFound("nombre.doesNotContain=" + DEFAULT_NOMBRE);
-
-        // Get all the productoList where nombre does not contain UPDATED_NOMBRE
-        defaultProductoShouldBeFound("nombre.doesNotContain=" + UPDATED_NOMBRE);
-    }
-
-
-    @Test
-    @Transactional
-    public void getAllProductosByPrecioIsEqualToSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where precio equals to DEFAULT_PRECIO
-        defaultProductoShouldBeFound("precio.equals=" + DEFAULT_PRECIO);
-
-        // Get all the productoList where precio equals to UPDATED_PRECIO
-        defaultProductoShouldNotBeFound("precio.equals=" + UPDATED_PRECIO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByPrecioIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where precio not equals to DEFAULT_PRECIO
-        defaultProductoShouldNotBeFound("precio.notEquals=" + DEFAULT_PRECIO);
-
-        // Get all the productoList where precio not equals to UPDATED_PRECIO
-        defaultProductoShouldBeFound("precio.notEquals=" + UPDATED_PRECIO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByPrecioIsInShouldWork() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where precio in DEFAULT_PRECIO or UPDATED_PRECIO
-        defaultProductoShouldBeFound("precio.in=" + DEFAULT_PRECIO + "," + UPDATED_PRECIO);
-
-        // Get all the productoList where precio equals to UPDATED_PRECIO
-        defaultProductoShouldNotBeFound("precio.in=" + UPDATED_PRECIO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByPrecioIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where precio is not null
-        defaultProductoShouldBeFound("precio.specified=true");
-
-        // Get all the productoList where precio is null
-        defaultProductoShouldNotBeFound("precio.specified=false");
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByPrecioIsGreaterThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where precio is greater than or equal to DEFAULT_PRECIO
-        defaultProductoShouldBeFound("precio.greaterThanOrEqual=" + DEFAULT_PRECIO);
-
-        // Get all the productoList where precio is greater than or equal to UPDATED_PRECIO
-        defaultProductoShouldNotBeFound("precio.greaterThanOrEqual=" + UPDATED_PRECIO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByPrecioIsLessThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where precio is less than or equal to DEFAULT_PRECIO
-        defaultProductoShouldBeFound("precio.lessThanOrEqual=" + DEFAULT_PRECIO);
-
-        // Get all the productoList where precio is less than or equal to SMALLER_PRECIO
-        defaultProductoShouldNotBeFound("precio.lessThanOrEqual=" + SMALLER_PRECIO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByPrecioIsLessThanSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where precio is less than DEFAULT_PRECIO
-        defaultProductoShouldNotBeFound("precio.lessThan=" + DEFAULT_PRECIO);
-
-        // Get all the productoList where precio is less than UPDATED_PRECIO
-        defaultProductoShouldBeFound("precio.lessThan=" + UPDATED_PRECIO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllProductosByPrecioIsGreaterThanSomething() throws Exception {
-        // Initialize the database
-        productoRepository.saveAndFlush(producto);
-
-        // Get all the productoList where precio is greater than DEFAULT_PRECIO
-        defaultProductoShouldNotBeFound("precio.greaterThan=" + DEFAULT_PRECIO);
-
-        // Get all the productoList where precio is greater than SMALLER_PRECIO
-        defaultProductoShouldBeFound("precio.greaterThan=" + SMALLER_PRECIO);
-    }
-
-    /**
-     * Executes the search, and checks that the default entity is returned.
-     */
-    private void defaultProductoShouldBeFound(String filter) throws Exception {
-        restProductoMockMvc.perform(get("/api/productos?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(producto.getId().intValue())))
-            .andExpect(jsonPath("$.[*].nombre").value(hasItem(DEFAULT_NOMBRE)))
-            .andExpect(jsonPath("$.[*].precio").value(hasItem(DEFAULT_PRECIO.intValue())));
-
-        // Check, that the count call also returns 1
-        restProductoMockMvc.perform(get("/api/productos/count?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(content().string("1"));
-    }
-
-    /**
-     * Executes the search, and checks that the default entity is not returned.
-     */
-    private void defaultProductoShouldNotBeFound(String filter) throws Exception {
-        restProductoMockMvc.perform(get("/api/productos?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$").isEmpty());
-
-        // Check, that the count call also returns 0
-        restProductoMockMvc.perform(get("/api/productos/count?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(content().string("0"));
-    }
-
-
     @Test
     @Transactional
     public void getNonExistingProducto() throws Exception {
@@ -451,11 +196,10 @@ public class ProductoResourceIT {
         updatedProducto
             .nombre(UPDATED_NOMBRE)
             .precio(UPDATED_PRECIO);
-        ProductoDTO productoDTO = productoMapper.toDto(updatedProducto);
 
         restProductoMockMvc.perform(put("/api/productos")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(productoDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(updatedProducto)))
             .andExpect(status().isOk());
 
         // Validate the Producto in the database
@@ -472,12 +216,11 @@ public class ProductoResourceIT {
         int databaseSizeBeforeUpdate = productoRepository.findAll().size();
 
         // Create the Producto
-        ProductoDTO productoDTO = productoMapper.toDto(producto);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restProductoMockMvc.perform(put("/api/productos")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(productoDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(producto)))
             .andExpect(status().isBadRequest());
 
         // Validate the Producto in the database

@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface FacturaDetalleRepository extends JpaRepository<FacturaDetalle, Long>, JpaSpecificationExecutor<FacturaDetalle> {
+public interface FacturaDetalleRepository extends JpaRepository<FacturaDetalle, Long> {
 
 }

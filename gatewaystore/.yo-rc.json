@@ -16,7 +16,7 @@
     "serviceDiscoveryType": "eureka",
     "skipClient": false,
     "skipServer": false,
-    "testFrameworks": ["protractor"],
+    "testFrameworks": ["protactor"],
     "websocket": "spring-websocket",
     "baseName": "gatewaystore",
     "applicationType": "gateway",
@@ -27,7 +27,7 @@
     "clientFramework": "angularX",
     "useSass": true,
     "jhipsterVersion": "6.7.1",
-    "creationTimestamp": 1587498300088,
+    "creationTimestamp": 1588299540166,
     "skipUserManagement": false,
     "clientPackageManager": "npm",
     "clientTheme": "none",
@@ -36,8 +36,8 @@
     "embeddableLaunchScript": false,
     "entitySuffix": "",
     "dtoSuffix": "DTO",
-    "otherModules": [],
-    "blueprints": []
+    "blueprints": [],
+    "otherModules": []
   },
-  "entities": ["Factura", "FacturaDetalle", "Cliente", "Usuario", "Notificacion", "Producto", "ProductoDetalle", "Detalle", "Stock"]
+  "entities": ["Factura", "FacturaDetalle", "Cliente", "Usuario", "Notificacion", "Producto", "Stock"]
 }

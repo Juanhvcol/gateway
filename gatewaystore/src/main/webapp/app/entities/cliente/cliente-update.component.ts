@@ -23,7 +23,7 @@ export class ClienteUpdateComponent implements OnInit {
     nombre: [],
     apellido: [],
     identificacion: [],
-    facturaId: []
+    factura: []
   });
 
   constructor(
@@ -47,7 +47,7 @@ export class ClienteUpdateComponent implements OnInit {
       nombre: cliente.nombre,
       apellido: cliente.apellido,
       identificacion: cliente.identificacion,
-      facturaId: cliente.facturaId
+      factura: cliente.factura
     });
   }
 
@@ -72,7 +72,7 @@ export class ClienteUpdateComponent implements OnInit {
       nombre: this.editForm.get(['nombre'])!.value,
       apellido: this.editForm.get(['apellido'])!.value,
       identificacion: this.editForm.get(['identificacion'])!.value,
-      facturaId: this.editForm.get(['facturaId'])!.value
+      factura: this.editForm.get(['factura'])!.value
     };
   }
 

@@ -33,9 +33,9 @@
 
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="gatewaystoreApp.inventariomicroservicioStock.producto" for="field_producto">Producto</label>
-                    <select class="form-control" id="field_producto" name="producto" formControlName="productoId">
+                    <select class="form-control" id="field_producto" name="producto" formControlName="producto">
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="productoOption.id" *ngFor="let productoOption of productos; trackBy: trackById">{{ productoOption.nombre }}</option>
+                        <option [ngValue]="productoOption.id === editForm.get('producto')!.value?.id ? editForm.get('producto')!.value : productoOption" *ngFor="let productoOption of productos; trackBy: trackById">{{ productoOption.nombre }}</option>
                     </select>
                 </div>
             </div>

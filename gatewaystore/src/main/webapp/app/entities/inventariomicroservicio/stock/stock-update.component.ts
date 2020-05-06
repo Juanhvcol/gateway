@@ -21,7 +21,7 @@ export class StockUpdateComponent implements OnInit {
   editForm = this.fb.group({
     id: [],
     cantidad: [null, [Validators.required, Validators.min(0)]],
-    productoId: []
+    producto: []
   });
 
   constructor(
@@ -43,7 +43,7 @@ export class StockUpdateComponent implements OnInit {
     this.editForm.patchValue({
       id: stock.id,
       cantidad: stock.cantidad,
-      productoId: stock.productoId
+      producto: stock.producto
     });
   }
 
@@ -66,7 +66,7 @@ export class StockUpdateComponent implements OnInit {
       ...new Stock(),
       id: this.editForm.get(['id'])!.value,
       cantidad: this.editForm.get(['cantidad'])!.value,
-      productoId: this.editForm.get(['productoId'])!.value
+      producto: this.editForm.get(['producto'])!.value
     };
   }
 

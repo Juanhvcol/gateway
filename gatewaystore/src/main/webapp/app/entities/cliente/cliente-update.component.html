@@ -31,9 +31,9 @@
 
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="gatewaystoreApp.cliente.factura" for="field_factura">Factura</label>
-                    <select class="form-control" id="field_factura" name="factura" formControlName="facturaId">
+                    <select class="form-control" id="field_factura" name="factura" formControlName="factura">
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="facturaOption.id" *ngFor="let facturaOption of facturas; trackBy: trackById">{{ facturaOption.id }}</option>
+                        <option [ngValue]="facturaOption.id === editForm.get('factura')!.value?.id ? editForm.get('factura')!.value : facturaOption" *ngFor="let facturaOption of facturas; trackBy: trackById">{{ facturaOption.id }}</option>
                     </select>
                 </div>
             </div>

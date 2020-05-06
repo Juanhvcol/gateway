@@ -22,8 +22,8 @@
                 </dd>
                 <dt><span jhiTranslate="gatewaystoreApp.cliente.factura">Factura</span></dt>
                 <dd>
-                    <div *ngIf="cliente.facturaId">
-                        <a [routerLink]="['/factura', cliente.facturaId, 'view']">{{ cliente.facturaId }}</a>
+                    <div *ngIf="cliente.factura">
+                        <a [routerLink]="['/factura', cliente.factura?.id, 'view']">{{ cliente.factura?.id }}</a>
                     </div>
                 </dd>
             </dl>

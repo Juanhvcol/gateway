@@ -2,14 +2,8 @@ package com.themakers.storeonline.web.rest;
 
 import com.themakers.storeonline.GatewaystoreApp;
 import com.themakers.storeonline.domain.Factura;
-import com.themakers.storeonline.domain.Cliente;
 import com.themakers.storeonline.repository.FacturaRepository;
-import com.themakers.storeonline.service.FacturaService;
-import com.themakers.storeonline.service.dto.FacturaDTO;
-import com.themakers.storeonline.service.mapper.FacturaMapper;
 import com.themakers.storeonline.web.rest.errors.ExceptionTranslator;
-import com.themakers.storeonline.service.dto.FacturaCriteria;
-import com.themakers.storeonline.service.FacturaQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,22 +41,12 @@ public class FacturaResourceIT {
 
     private static final BigDecimal DEFAULT_VALOR = new BigDecimal(1);
     private static final BigDecimal UPDATED_VALOR = new BigDecimal(2);
-    private static final BigDecimal SMALLER_VALOR = new BigDecimal(1 - 1);
 
     private static final Instant DEFAULT_FECHA_PAGO = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_FECHA_PAGO = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
     @Autowired
     private FacturaRepository facturaRepository;
-
-    @Autowired
-    private FacturaMapper facturaMapper;
-
-    @Autowired
-    private FacturaService facturaService;
-
-    @Autowired
-    private FacturaQueryService facturaQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -86,7 +70,7 @@ public class FacturaResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final FacturaResource facturaResource = new FacturaResource(facturaService, facturaQueryService);
+        final FacturaResource facturaResource = new FacturaResource(facturaRepository);
         this.restFacturaMockMvc = MockMvcBuilders.standaloneSetup(facturaResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -133,10 +117,9 @@ public class FacturaResourceIT {
         int databaseSizeBeforeCreate = facturaRepository.findAll().size();
 
         // Create the Factura
-        FacturaDTO facturaDTO = facturaMapper.toDto(factura);
         restFacturaMockMvc.perform(post("/api/facturas")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(facturaDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(factura)))
             .andExpect(status().isCreated());
 
         // Validate the Factura in the database
@@ -155,12 +138,11 @@ public class FacturaResourceIT {
 
         // Create the Factura with an existing ID
         factura.setId(1L);
-        FacturaDTO facturaDTO = facturaMapper.toDto(factura);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restFacturaMockMvc.perform(post("/api/facturas")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(facturaDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(factura)))
             .andExpect(status().isBadRequest());
 
         // Validate the Factura in the database
@@ -201,291 +183,6 @@ public class FacturaResourceIT {
             .andExpect(jsonPath("$.fechaPago").value(DEFAULT_FECHA_PAGO.toString()));
     }
 
-
-    @Test
-    @Transactional
-    public void getFacturasByIdFiltering() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        Long id = factura.getId();
-
-        defaultFacturaShouldBeFound("id.equals=" + id);
-        defaultFacturaShouldNotBeFound("id.notEquals=" + id);
-
-        defaultFacturaShouldBeFound("id.greaterThanOrEqual=" + id);
-        defaultFacturaShouldNotBeFound("id.greaterThan=" + id);
-
-        defaultFacturaShouldBeFound("id.lessThanOrEqual=" + id);
-        defaultFacturaShouldNotBeFound("id.lessThan=" + id);
-    }
-
-
-    @Test
-    @Transactional
-    public void getAllFacturasByFechaIsEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where fecha equals to DEFAULT_FECHA
-        defaultFacturaShouldBeFound("fecha.equals=" + DEFAULT_FECHA);
-
-        // Get all the facturaList where fecha equals to UPDATED_FECHA
-        defaultFacturaShouldNotBeFound("fecha.equals=" + UPDATED_FECHA);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByFechaIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where fecha not equals to DEFAULT_FECHA
-        defaultFacturaShouldNotBeFound("fecha.notEquals=" + DEFAULT_FECHA);
-
-        // Get all the facturaList where fecha not equals to UPDATED_FECHA
-        defaultFacturaShouldBeFound("fecha.notEquals=" + UPDATED_FECHA);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByFechaIsInShouldWork() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where fecha in DEFAULT_FECHA or UPDATED_FECHA
-        defaultFacturaShouldBeFound("fecha.in=" + DEFAULT_FECHA + "," + UPDATED_FECHA);
-
-        // Get all the facturaList where fecha equals to UPDATED_FECHA
-        defaultFacturaShouldNotBeFound("fecha.in=" + UPDATED_FECHA);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByFechaIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where fecha is not null
-        defaultFacturaShouldBeFound("fecha.specified=true");
-
-        // Get all the facturaList where fecha is null
-        defaultFacturaShouldNotBeFound("fecha.specified=false");
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByValorIsEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where valor equals to DEFAULT_VALOR
-        defaultFacturaShouldBeFound("valor.equals=" + DEFAULT_VALOR);
-
-        // Get all the facturaList where valor equals to UPDATED_VALOR
-        defaultFacturaShouldNotBeFound("valor.equals=" + UPDATED_VALOR);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByValorIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where valor not equals to DEFAULT_VALOR
-        defaultFacturaShouldNotBeFound("valor.notEquals=" + DEFAULT_VALOR);
-
-        // Get all the facturaList where valor not equals to UPDATED_VALOR
-        defaultFacturaShouldBeFound("valor.notEquals=" + UPDATED_VALOR);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByValorIsInShouldWork() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where valor in DEFAULT_VALOR or UPDATED_VALOR
-        defaultFacturaShouldBeFound("valor.in=" + DEFAULT_VALOR + "," + UPDATED_VALOR);
-
-        // Get all the facturaList where valor equals to UPDATED_VALOR
-        defaultFacturaShouldNotBeFound("valor.in=" + UPDATED_VALOR);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByValorIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where valor is not null
-        defaultFacturaShouldBeFound("valor.specified=true");
-
-        // Get all the facturaList where valor is null
-        defaultFacturaShouldNotBeFound("valor.specified=false");
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByValorIsGreaterThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where valor is greater than or equal to DEFAULT_VALOR
-        defaultFacturaShouldBeFound("valor.greaterThanOrEqual=" + DEFAULT_VALOR);
-
-        // Get all the facturaList where valor is greater than or equal to UPDATED_VALOR
-        defaultFacturaShouldNotBeFound("valor.greaterThanOrEqual=" + UPDATED_VALOR);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByValorIsLessThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where valor is less than or equal to DEFAULT_VALOR
-        defaultFacturaShouldBeFound("valor.lessThanOrEqual=" + DEFAULT_VALOR);
-
-        // Get all the facturaList where valor is less than or equal to SMALLER_VALOR
-        defaultFacturaShouldNotBeFound("valor.lessThanOrEqual=" + SMALLER_VALOR);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByValorIsLessThanSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where valor is less than DEFAULT_VALOR
-        defaultFacturaShouldNotBeFound("valor.lessThan=" + DEFAULT_VALOR);
-
-        // Get all the facturaList where valor is less than UPDATED_VALOR
-        defaultFacturaShouldBeFound("valor.lessThan=" + UPDATED_VALOR);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByValorIsGreaterThanSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where valor is greater than DEFAULT_VALOR
-        defaultFacturaShouldNotBeFound("valor.greaterThan=" + DEFAULT_VALOR);
-
-        // Get all the facturaList where valor is greater than SMALLER_VALOR
-        defaultFacturaShouldBeFound("valor.greaterThan=" + SMALLER_VALOR);
-    }
-
-
-    @Test
-    @Transactional
-    public void getAllFacturasByFechaPagoIsEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where fechaPago equals to DEFAULT_FECHA_PAGO
-        defaultFacturaShouldBeFound("fechaPago.equals=" + DEFAULT_FECHA_PAGO);
-
-        // Get all the facturaList where fechaPago equals to UPDATED_FECHA_PAGO
-        defaultFacturaShouldNotBeFound("fechaPago.equals=" + UPDATED_FECHA_PAGO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByFechaPagoIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where fechaPago not equals to DEFAULT_FECHA_PAGO
-        defaultFacturaShouldNotBeFound("fechaPago.notEquals=" + DEFAULT_FECHA_PAGO);
-
-        // Get all the facturaList where fechaPago not equals to UPDATED_FECHA_PAGO
-        defaultFacturaShouldBeFound("fechaPago.notEquals=" + UPDATED_FECHA_PAGO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByFechaPagoIsInShouldWork() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where fechaPago in DEFAULT_FECHA_PAGO or UPDATED_FECHA_PAGO
-        defaultFacturaShouldBeFound("fechaPago.in=" + DEFAULT_FECHA_PAGO + "," + UPDATED_FECHA_PAGO);
-
-        // Get all the facturaList where fechaPago equals to UPDATED_FECHA_PAGO
-        defaultFacturaShouldNotBeFound("fechaPago.in=" + UPDATED_FECHA_PAGO);
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByFechaPagoIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-
-        // Get all the facturaList where fechaPago is not null
-        defaultFacturaShouldBeFound("fechaPago.specified=true");
-
-        // Get all the facturaList where fechaPago is null
-        defaultFacturaShouldNotBeFound("fechaPago.specified=false");
-    }
-
-    @Test
-    @Transactional
-    public void getAllFacturasByClienteIsEqualToSomething() throws Exception {
-        // Initialize the database
-        facturaRepository.saveAndFlush(factura);
-        Cliente cliente = ClienteResourceIT.createEntity(em);
-        em.persist(cliente);
-        em.flush();
-        factura.addCliente(cliente);
-        facturaRepository.saveAndFlush(factura);
-        Long clienteId = cliente.getId();
-
-        // Get all the facturaList where cliente equals to clienteId
-        defaultFacturaShouldBeFound("clienteId.equals=" + clienteId);
-
-        // Get all the facturaList where cliente equals to clienteId + 1
-        defaultFacturaShouldNotBeFound("clienteId.equals=" + (clienteId + 1));
-    }
-
-    /**
-     * Executes the search, and checks that the default entity is returned.
-     */
-    private void defaultFacturaShouldBeFound(String filter) throws Exception {
-        restFacturaMockMvc.perform(get("/api/facturas?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(factura.getId().intValue())))
-            .andExpect(jsonPath("$.[*].fecha").value(hasItem(DEFAULT_FECHA.toString())))
-            .andExpect(jsonPath("$.[*].valor").value(hasItem(DEFAULT_VALOR.intValue())))
-            .andExpect(jsonPath("$.[*].fechaPago").value(hasItem(DEFAULT_FECHA_PAGO.toString())));
-
-        // Check, that the count call also returns 1
-        restFacturaMockMvc.perform(get("/api/facturas/count?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(content().string("1"));
-    }
-
-    /**
-     * Executes the search, and checks that the default entity is not returned.
-     */
-    private void defaultFacturaShouldNotBeFound(String filter) throws Exception {
-        restFacturaMockMvc.perform(get("/api/facturas?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$").isEmpty());
-
-        // Check, that the count call also returns 0
-        restFacturaMockMvc.perform(get("/api/facturas/count?sort=id,desc&" + filter))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(content().string("0"));
-    }
-
-
     @Test
     @Transactional
     public void getNonExistingFactura() throws Exception {
@@ -510,11 +207,10 @@ public class FacturaResourceIT {
             .fecha(UPDATED_FECHA)
             .valor(UPDATED_VALOR)
             .fechaPago(UPDATED_FECHA_PAGO);
-        FacturaDTO facturaDTO = facturaMapper.toDto(updatedFactura);
 
         restFacturaMockMvc.perform(put("/api/facturas")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(facturaDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(updatedFactura)))
             .andExpect(status().isOk());
 
         // Validate the Factura in the database
@@ -532,12 +228,11 @@ public class FacturaResourceIT {
         int databaseSizeBeforeUpdate = facturaRepository.findAll().size();
 
         // Create the Factura
-        FacturaDTO facturaDTO = facturaMapper.toDto(factura);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restFacturaMockMvc.perform(put("/api/facturas")
             .contentType(TestUtil.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(facturaDTO)))
+            .content(TestUtil.convertObjectToJsonBytes(factura)))
             .andExpect(status().isBadRequest());
 
         // Validate the Factura in the database

@@ -21,10 +21,10 @@
     <div class="table-responsive" id="entities" *ngIf="stocks?.length > 0">
         <table class="table table-striped" aria-describedby="page-heading">
             <thead>
-                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
-                    <th scope="col"  jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="cantidad"><span jhiTranslate="gatewaystoreApp.inventariomicroservicioStock.cantidad">Cantidad</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="productoNombre"><span jhiTranslate="gatewaystoreApp.inventariomicroservicioStock.producto">Producto</span> <fa-icon icon="sort"></fa-icon></th>
+                <tr>
+                    <th scope="col" ><span jhiTranslate="global.field.id">ID</span></th>
+                    <th scope="col" ><span jhiTranslate="gatewaystoreApp.inventariomicroservicioStock.cantidad">Cantidad</span></th>
+                    <th scope="col" ><span jhiTranslate="gatewaystoreApp.inventariomicroservicioStock.producto">Producto</span></th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -33,8 +33,8 @@
                     <td><a [routerLink]="['/stock', stock.id, 'view']">{{ stock.id }}</a></td>
                     <td>{{ stock.cantidad }}</td>
                     <td>
-                        <div *ngIf="stock.productoId">
-                            <a [routerLink]="['/producto', stock.productoId , 'view']" >{{ stock.productoNombre }}</a>
+                        <div *ngIf="stock.producto">
+                            <a [routerLink]="['/producto', stock.producto?.id, 'view']" >{{ stock.producto?.nombre }}</a>
                         </div>
                     </td>
                     <td class="text-right">
@@ -63,15 +63,5 @@
                 </tr>
             </tbody>
         </table>
-    </div>
-
-    <div *ngIf="stocks?.length > 0">
-        <div class="row justify-content-center">
-            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
-        </div>
-
-        <div class="row justify-content-center">
-            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
-        </div>
     </div>
 </div>

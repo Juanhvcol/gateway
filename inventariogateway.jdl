@@ -1,0 +1,133 @@
+
+// Set an angular suffix
+// angularSuffix * with mySuffix
+application{
+   config{
+   
+   		baseName gatewaystore
+        applicationType gateway
+        packageName com.themakers.storeonline
+        serviceDiscoveryType eureka
+        authenticationType jwt
+        prodDatabaseType postgresql
+        devDatabaseType postgresql
+        cacheProvider hazelcast
+        buildTool maven
+        serverPort 8080
+        clientFramework angularX
+        useSass true
+        languages [es, en]
+        nativeLanguage es
+        enableTranslation true
+        websocket spring-websocket
+        testFrameworks [protactor]
+   
+   
+   }
+   entities *
+
+}
+entity Factura{
+   fecha Instant
+   valor BigDecimal
+   fechaPago Instant
+  
+}
+entity FacturaDetalle{
+   productoId Long //from inventariomicroservicio
+   cantidad Long
+   precioUnitario BigDecimal
+}
+entity Cliente{
+  nombre String
+  apellido String
+  identificacion String
+
+
+}
+entity Usuario{
+
+  nombre String
+  apellido String
+  direccion String
+  
+}
+
+relationship OneToOne{
+  Usuario{user required} to User
+}
+
+relationship OneToMany{
+  Factura{cliente(nombre)} to Cliente{factura}
+
+}
+application {
+
+	config{
+    
+    		baseName notificacionesmicroservicio
+            applicationType microservicio
+            packageName com.themkers.notificacion
+            serviceDiscoveryType eureka
+            authenticationType jwt
+            databaseType mongodb
+            cacheProvider no
+            enableHibernateCache false
+            buildTool maven
+            serverPort 8082
+            languages [es, en]
+    		
+    }
+    entities Notificacion
+}
+
+entity Notificacion{
+
+  fecha Instant required
+  mensaje String 
+  fechaSend Instant required
+  userId Long //from del gateway
+}
+
+
+microservice Notificacion with notificacionesmicroservicio
+
+application {
+
+	config{
+    
+    		baseName inventariomicroservicio
+            applicationType microservicio
+            packageName com.themkers.inventario
+            serviceDiscoveryType eureka
+            authenticationType jwt
+            prodDatabaseType postgresql
+            devDatabaseType postgresql
+            enableHibernateCache false
+            buildTool maven
+            serverPort 8081
+            languages [es, en]
+    		
+    }
+    entities Producto
+}
+
+entity Producto{
+  nombre String
+  precio BigDecimal 
+
+}
+
+entity Stock{
+  cantidad Long required min(0)
+  
+}
+ relationship ManyToOne{
+ 
+  Stock{producto(nombre)} to Producto
+ }
+ 
+ microservice Producto, Stock with inventariomicroservicio
+
+
+

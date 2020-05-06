@@ -14,8 +14,8 @@
                 </dd>
                 <dt><span jhiTranslate="gatewaystoreApp.inventariomicroservicioStock.producto">Producto</span></dt>
                 <dd>
-                    <div *ngIf="stock.productoId">
-                        <a [routerLink]="['/producto', stock.productoId, 'view']">{{ stock.productoNombre }}</a>
+                    <div *ngIf="stock.producto">
+                        <a [routerLink]="['/producto', stock.producto?.id, 'view']">{{ stock.producto?.nombre }}</a>
                     </div>
                 </dd>
             </dl>
